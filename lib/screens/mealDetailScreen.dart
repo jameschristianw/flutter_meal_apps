@@ -1,20 +1,104 @@
 import 'package:flutter/material.dart';
 
+import '../dummy_data.dart';
+import '../dummy_data.dart';
+
 class MealDetailScreen extends StatelessWidget {
   static const routeName = '/meal-detail';
+
+  final Function toggleFav;
+  final Function isMealFav;
+
+  MealDetailScreen(this.toggleFav, this.isMealFav);
+
+  Widget buildSectionTitle(String title, BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.headline6,
+      ),
+    );
+  }
+
+  Widget buildContainer(Widget child) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
+      height: 200,
+      child: child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final mealId = ModalRoute.of(context).settings.arguments as String;
+    final selectedMeal = DUMMY_MEALS.firstWhere((meal) => meal.id == mealId);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Title"),
+        title: Text("${selectedMeal.title}"),
       ),
-      body: Container(
-        child: Center(
-          child: Text("Meal Detail - $mealId"),
+      body: SingleChildScrollView(
+        child: Container(
+          child: Center(
+            child: Column(
+              children: [
+                Container(
+                  // height: 300,
+                  width: double.infinity,
+                  child: Image.network(selectedMeal.imageUrl),
+                ),
+                buildSectionTitle('Ingredients', context),
+                buildContainer(
+                  ListView.builder(
+                    itemCount: selectedMeal.ingredients.length,
+                    itemBuilder: (context, index) => Card(
+                      color: Theme.of(context).accentColor,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 5,
+                        ),
+                        child: Text(selectedMeal.ingredients.elementAt(index)),
+                      ),
+                    ),
+                  ),
+                ),
+                buildSectionTitle('Steps', context),
+                buildContainer(
+                  ListView.builder(
+                    itemBuilder: (context, idx) => Column(
+                      children: [
+                        ListTile(
+                          leading: CircleAvatar(
+                            child: Text("# ${(idx + 1)}"),
+                          ),
+                          title: Text(
+                            selectedMeal.steps.elementAt(idx),
+                          ),
+                        ),
+                        Divider(),
+                      ],
+                    ),
+                    itemCount: selectedMeal.steps.length,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(
+          isMealFav(mealId) ? Icons.star : Icons.star_border,
+        ),
+        onPressed: () => toggleFav(mealId),
       ),
     );
   }
